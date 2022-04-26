@@ -1,0 +1,12 @@
+primary会通过log channel向backup传输log event
+
+对于普通的指令，primary会向backup传输指令。对于不确定性指令，primary会向backup传输指令执行的结果
+
+
+
+
+
+Primary会等到Backup已经有了最新的数据，才会将回复返回给客户端。这几乎是所有的复制方案中对于性能产生伤害的地方。这里的同步等待使得Primary不能超前Backup太多，因为如果Primary超前了并且又故障了，对应的就是Backup的状态落后于客户端的状态。
+
+几乎每一个复制系统都有这个问题，在某个时间点，Primary必须要停下来等待Backup，这对于性能是实打实的限制
+

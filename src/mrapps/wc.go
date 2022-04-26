@@ -23,6 +23,7 @@ func Map(filename string, contents string) []mr.KeyValue {
 	ff := func(r rune) bool { return !unicode.IsLetter(r) }
 
 	// split contents into an array of words.
+    // 如果不是字母，就在这个字符处分割
 	words := strings.FieldsFunc(contents, ff)
 
 	kva := []mr.KeyValue{}
