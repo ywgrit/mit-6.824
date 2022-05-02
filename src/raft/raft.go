@@ -217,7 +217,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	}
     rf.electionTimer.Reset(ElectionTimeout())
 
-	if rf.state == Candidate && args.Term == rf.currentTerm || args.Term > rf.currentTerm {// rf is candidate, so rf want become leader, but now rf received appendentries news which comes from leader, so rf will know there is a leader, then rf will become follower and reset rf.term
+	if rf.state == Candidate || args.Term > rf.currentTerm {// rf is candidate, so rf want become leader, but now rf received appendentries news which comes from leader, so rf will know there is a leader, then rf will become follower and reset rf.term
         rf.StateTransfer(Follower)
 		rf.ResetTerm(args.Term) // args is leader, so reset rf.term according to args.term
     }
@@ -278,7 +278,7 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
     }
 
     rf.electionTimer.Reset(ElectionTimeout())
-    if args.Term > rf.currentTerm || rf.state == Candidate && args.Term == rf.commitIndex {
+    if args.Term > rf.currentTerm || rf.state == Candidate {
         rf.StateTransfer(Follower)
         rf.ResetTerm(args.Term)
     }
@@ -404,6 +404,7 @@ func (rf *Raft) CondInstallSnapshot(lastIncludedTerm int, lastIncludedIndex int,
 // all info up to and including index. this means the
 // service no longer needs the log through (and including)
 // that index. Raft should now trim its log as much as possible.
+// service find log is too big, so service wants to compaction log, snapshot is database, and snapshot should be persisted in persister
 func (rf *Raft) Snapshot(index int, snapshot []byte) {
     rf.mu.Lock()
     defer rf.mu.Unlock()
@@ -509,8 +510,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 // the struct itself.
 //
 func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *RequestVoteReply) bool {
-	ok := rf.peers[server].Call("Raft.RequestVote", args, reply)
-	return ok
+	return rf.peers[server].Call("Raft.RequestVote", args, reply)
 }
 
 //

@@ -1,0 +1,2 @@
+snapshot中存储的是数据库的真实数据，state和snapshot都是存储在raft.persister中的
+何时做log compaction：上层的service发现下层的raft的log太大时。何时做这个大小检查：service每收到下层raft发来的一个operation时就会检查
